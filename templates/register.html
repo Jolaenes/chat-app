@@ -14,9 +14,19 @@
 
     <p id="result"></p>
 
+    <!-- ========================
+        Dzień 5
+        Guzik / link do logowania
+        ======================== -->
+    <div class="login-link">
+        <span>Masz już konto?</span>
+        <button id="loginBtn">Zaloguj się</button>
+    </div>
+
     <script>
         const form = document.getElementById("registerForm");
         const result = document.getElementById("result");
+        const loginBtn = document.getElementById("loginBtn");
 
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -41,6 +51,13 @@
                 result.textContent = resData.error;
             }
         });
+
+        // Przekierowanie do logowania
+
+        loginBtn.addEventListener("click", () => {
+            window.location.href = "/login";
+        });
+
     </script>
 </body>
 </html>

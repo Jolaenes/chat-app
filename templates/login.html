@@ -23,9 +23,19 @@
 
     <p id="result"></p>
 
+    <!-- ========================
+     Dzień 5
+     Guzik / link do rejestracji
+     ======================== -->
+    <div class="register-link">
+        <span>Nie masz konta?</span>
+        <button id="registerBtn">Zarejestruj się</button>
+    </div>
+
     <script>
         const form = document.getElementById("loginForm");
         const result = document.getElementById("result");
+        const registerBtn = document.getElementById("registerBtn");
 
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -55,6 +65,14 @@
                 result.textContent = data.error;
             }
         });
+
+     
+        // Przekierowanie do rejestracji
+      
+        registerBtn.addEventListener("click", () => {
+            window.location.href = "/register";
+        });
+
     </script>
 </body>
 </html>
