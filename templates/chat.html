@@ -1,0 +1,75 @@
+﻿<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #f0f0f0;
+        }
+
+        .profile {
+            cursor: pointer;
+            position: relative;
+        }
+
+        .dropdown {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 30px;
+            background: white;
+            border: 1px solid #ccc;
+            padding: 5px;
+        }
+
+            .dropdown button {
+                background: none;
+                border: none;
+                cursor: pointer;
+                padding: 5px;
+                width: 100%;
+                text-align: left;
+            }
+    </style>
+</head>
+<body>
+
+    <div class="topbar">
+        <div class="profile" onclick="toggleMenu()">
+            👤 Zalogowany jako: <strong>{{ user }}</strong>
+            <div class="dropdown" id="menu">
+                <button onclick="logout()">Wyloguj</button>
+            </div>
+        </div>
+    </div>
+
+    <div style="padding: 20px;">
+        <h2>Chat (wkrótce)</h2>
+        <p>Tu pojawi się lista czatów i wiadomości.</p>
+    </div>
+
+    <script>
+    function toggleMenu() {
+        const menu = document.getElementById("menu");
+        menu.style.display = menu.style.display === "block" ? "none" : "block";
+    }
+
+    async function logout() {
+        await fetch("/logout");
+        alert("Zostałeś wylogowany");
+        window.location.href = "/login";
+    }
+    </script>
+
+</body>
+</html>

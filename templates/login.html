@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Logowanie - Chat App</title>
+</head>
+<body>
+    <h1>Logowanie</h1>
+
+    <form id="loginForm">
+        <label>
+            Username:
+            <input type="text" name="username" required>
+        </label><br><br>
+
+        <label>
+            Password:
+            <input type="password" name="password" required>
+        </label><br><br>
+
+        <button type="submit">Zaloguj</button>
+    </form>
+
+    <p id="result"></p>
+
+    <script>
+        const form = document.getElementById("loginForm");
+        const result = document.getElementById("result");
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const response = await fetch("/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    username: form.username.value,
+                    password: form.password.value
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                result.style.color = "green";
+                if (response.ok) {
+                    window.location.href = data.redirect;
+                } else {
+                    result.style.color = "red";
+                    result.textContent = data.error;
+                }
+
+            } else {
+                result.style.color = "red";
+                result.textContent = data.error;
+            }
+        });
+    </script>
+</body>
+</html>
