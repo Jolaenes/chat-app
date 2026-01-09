@@ -108,6 +108,84 @@ def chat():
     return render_template("chat.html", user=session["user"])
 
 
+# Dzień 5
+# API: pobranie listy wszystkich użytkowników
+
+@app.route("/api/users")
+def api_users():
+    if "user" not in session:
+        return jsonify({"error": "Not logged in"}), 401
+
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, username FROM users WHERE username != ?", (session["user"],))
+    users = [{"id": row[0], "username": row[1]} for row in cursor.fetchall()]
+    conn.close()
+    return jsonify(users)
+
+
+# Dzień 5
+# API: pobranie listy czatów
+
+@app.route("/api/chats")
+def api_chats():
+    if "user" not in session:
+        return jsonify({"error": "Not logged in"}), 401
+
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    # tylko czaty, w których uczestniczy użytkownik
+    cursor.execute("""
+        SELECT c.id, c.name
+        FROM chats c
+        JOIN chat_users cu ON c.id = cu.chat_id
+        JOIN users u ON cu.user_id = u.id
+        WHERE u.username = ?
+    """, (session["user"],))
+    chats = [{"id": row[0], "name": row[1]} for row in cursor.fetchall()]
+    conn.close()
+    return jsonify(chats)
+
+
+# Dzień 5
+# API: tworzenie czatu z użytkownikami
+
+@app.route("/api/chats", methods=["POST"])
+def api_create_chat():
+    if "user" not in session:
+        return jsonify({"error": "Not logged in"}), 401
+
+    data = request.get_json()
+    name = data.get("name")
+    user_ids = data.get("user_ids", [])
+
+    if not name or not user_ids:
+        return jsonify({"error": "Name and users are required"}), 400
+
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+
+    try:
+        # tworzymy czat
+        cursor.execute("INSERT INTO chats (name) VALUES (?)", (name,))
+        chat_id = cursor.lastrowid
+
+        # dodajemy aktualnego użytkownika do czatu
+        cursor.execute("SELECT id FROM users WHERE username = ?", (session["user"],))
+        current_user_id = cursor.fetchone()[0]
+        cursor.execute("INSERT INTO chat_users (chat_id, user_id) VALUES (?, ?)", (chat_id, current_user_id))
+
+        # dodajemy resztę wybranych użytkowników
+        for uid in user_ids:
+            cursor.execute("INSERT INTO chat_users (chat_id, user_id) VALUES (?, ?)", (chat_id, uid))
+
+        conn.commit()
+        conn.close()
+        return jsonify({"message": "Chat created"}), 201
+    except sqlite3.IntegrityError as e:
+        conn.close()
+        return jsonify({"error": str(e)}), 400
+
 # Uruchomienie serwera
 if __name__ == "__main__":
     app.run(debug=True)
