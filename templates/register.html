@@ -1,0 +1,46 @@
+﻿<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Rejestracja - Chat App</title>
+</head>
+<body>
+    <h1>Rejestracja użytkownika</h1>
+    <form id="registerForm">
+        <label>Username: <input type="text" name="username" required></label><br><br>
+        <label>Password: <input type="password" name="password" required></label><br><br>
+        <button type="submit">Zarejestruj</button>
+    </form>
+
+    <p id="result"></p>
+
+    <script>
+        const form = document.getElementById("registerForm");
+        const result = document.getElementById("result");
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const data = {
+                username: form.username.value,
+                password: form.password.value
+            };
+
+            const response = await fetch("/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            const resData = await response.json();
+            if (response.ok) {
+                result.style.color = "green";
+                result.textContent = resData.message;
+            } else {
+                result.style.color = "red";
+                result.textContent = resData.error;
+            }
+        });
+    </script>
+</body>
+</html>
