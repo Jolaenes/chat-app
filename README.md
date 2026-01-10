@@ -74,7 +74,7 @@ python -m venv venv
 venv\Scripts\activate
 # Linux / macOS
 source venv/bin/activate
-pip install flask werkzeug
+pip install -r requirements.txt
 python app.py
 ```
 
