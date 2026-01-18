@@ -1,6 +1,7 @@
 ﻿<!DOCTYPE html>
 <html lang="pl">
 <head>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <meta charset="UTF-8">
     <title>Chat</title>
     <style>
@@ -124,7 +125,7 @@
            Dzień 6
            Okno czatu
         ======================== */
-        
+
         .chat-window {
             flex: 1;
             margin-left: 20px;
@@ -144,8 +145,13 @@
             flex: 1;
             padding: 5px;
         }
-        
 
+        .chat-window {
+            flex: 1;
+            margin-left: 20px;
+            display: none; /* <-- ukryte domyślnie */
+            flex-direction: column;
+        }
     </style>
 </head>
 <body>
@@ -310,10 +316,8 @@
                 // Obsługa kliknięcia czatu i ładowanie wiadomości
                 // ========================
                 
-                btn.onclick = () => {
-                    currentChatId = chat.id;
-                    loadMessages();
-                };
+                btn.onclick = () => joinChat(chat.id);
+
                 
 
               
@@ -364,12 +368,44 @@
             }
         }
 
-        // Auto odświeżanie wiadomości co 3 sekundy
-        setInterval(() => {
-            if (currentChatId) loadMessages();
-        }, 3000);
+        
         
 
+        // Połączenie z Socket.IO
+        const socket = io();  // domyślnie 127.0.0.1:5000
+
+        // Funkcja dołączania do pokoju czatu
+        async function joinChat(chatId) {
+            currentChatId = chatId;
+            messagesDiv.innerHTML = ""; // wyczyść okno
+            document.getElementById("chatWindow").style.display = "flex"; // pokaż okno
+            socket.emit("join", { chat_id: chatId });
+            await loadMessages(); // załaduj historię
+        }
+
+        // Nasłuchiwanie nowych wiadomości w czasie rzeczywistym
+        socket.on("receive_message", (data) => {
+            if (currentChatId === data.chat_id) { // tylko w aktualnym czacie
+                const div = document.createElement("div");
+                div.textContent = `[${data.timestamp}] ${data.user}: ${data.content}`;
+                messagesDiv.appendChild(div);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }
+        });
+
+        // Zmieniamy funkcję sendMessage, aby wysyłała przez Socket.IO
+        function sendMessage() {
+            const content = messageInput.value.trim();
+            if (!content || !currentChatId) return;
+
+            socket.emit("send_message", {
+                chat_id: currentChatId,
+                user: "{{ user }}",  // użytkownik z Jinja2
+                content: content
+            });
+
+            messageInput.value = "";
+        }
 
     </script>
 

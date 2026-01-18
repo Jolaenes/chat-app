@@ -3,8 +3,15 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask import redirect
 import sqlite3
 from models import init_db  # importujemy init_db()
+#DZIEN7
+import pytz
+from datetime import datetime
+from flask_socketio import SocketIO, emit, join_room
+
 
 app = Flask(__name__)
+#DZIEN7
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Sesja użytkownika
 app.secret_key = "dev-secret-key"
@@ -200,14 +207,15 @@ def api_send_message():
 
     if not chat_id or not content:
         return jsonify({"error": "Chat ID and content are required"}), 400
-
+    tz_pl = pytz.timezone('Europe/Warsaw')
+    timestamp = datetime.now(tz_pl).strftime("%Y-%m-%d %H:%M:%S")
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
 
     # zapis wiadomości w bazie
     cursor.execute(
-        "INSERT INTO messages (chat_id, user, content) VALUES (?, ?, ?)",
-        (chat_id, session["user"], content)
+        "INSERT INTO messages (chat_id, user, content, timestamp) VALUES (?, ?, ?, ?)",
+        (chat_id, session["user"], content, timestamp)
     )
     conn.commit()
     conn.close()
@@ -234,7 +242,43 @@ def api_get_messages(chat_id):
     messages = [{"user": row[0], "content": row[1], "timestamp": row[2]} for row in rows]
     return jsonify(messages)
 
+# =============== DZIEŃ 7 ======================
+# ============ SOCKET EVENTS (REALTIME) ===============
+# =====================================================
+
+
+@socketio.on("join")
+def on_join(data):
+    join_room(str(data["chat_id"]))
+
+@socketio.on("send_message")
+def socket_send_message(data):
+
+    warsaw_tz = pytz.timezone("Europe/Warsaw")
+    timestamp = datetime.now(warsaw_tz).strftime("%Y-%m-%d %H:%M:%S")
+   
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+  # Generowanie timestamp w strefie Europe/Warsaw
+    
+
+    cursor.execute(
+        "INSERT INTO messages (chat_id, user, content, timestamp) VALUES (?, ?, ?, ?)",
+        (data["chat_id"], data["user"], data["content"], timestamp)
+    )
+    conn.commit()
+    conn.close()
+
+
+    emit("receive_message", {
+        "chat_id": data["chat_id"],
+        "user": data["user"],
+        "content": data["content"],
+        "timestamp": timestamp
+    }, room=str(data["chat_id"]))
+
+
 
 # Uruchomienie serwera
 if __name__ == "__main__":
-    app.run(debug=True)
+    socketio.run(app, debug=True, port=5000)
