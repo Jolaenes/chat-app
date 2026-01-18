@@ -253,6 +253,9 @@ def on_join(data):
 
 @socketio.on("send_message")
 def socket_send_message(data):
+    user = session.get("user")  # <-- teraz używamy użytkownika z sesji
+    if not user:
+        return
 
     warsaw_tz = pytz.timezone("Europe/Warsaw")
     timestamp = datetime.now(warsaw_tz).strftime("%Y-%m-%d %H:%M:%S")
@@ -264,7 +267,7 @@ def socket_send_message(data):
 
     cursor.execute(
         "INSERT INTO messages (chat_id, user, content, timestamp) VALUES (?, ?, ?, ?)",
-        (data["chat_id"], data["user"], data["content"], timestamp)
+        (data["chat_id"], user, data["content"], timestamp)
     )
     conn.commit()
     conn.close()
@@ -272,7 +275,7 @@ def socket_send_message(data):
 
     emit("receive_message", {
         "chat_id": data["chat_id"],
-        "user": data["user"],
+        "user": user,
         "content": data["content"],
         "timestamp": timestamp
     }, room=str(data["chat_id"]))
