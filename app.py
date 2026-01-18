@@ -186,6 +186,55 @@ def api_create_chat():
         conn.close()
         return jsonify({"error": str(e)}), 400
 
+    # ================================
+# Dzień 6 – wysyłanie wiadomości
+# ================================
+@app.route("/api/messages", methods=["POST"])
+def api_send_message():
+    if "user" not in session:
+        return jsonify({"error": "Not logged in"}), 401
+
+    data = request.get_json()
+    chat_id = data.get("chat_id")
+    content = data.get("content")
+
+    if not chat_id or not content:
+        return jsonify({"error": "Chat ID and content are required"}), 400
+
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+
+    # zapis wiadomości w bazie
+    cursor.execute(
+        "INSERT INTO messages (chat_id, user, content) VALUES (?, ?, ?)",
+        (chat_id, session["user"], content)
+    )
+    conn.commit()
+    conn.close()
+
+    return jsonify({"message": "Message sent"}), 201
+
+# ================================
+# Dzień 6 – historia wiadomości
+# ================================
+@app.route("/api/messages/<int:chat_id>")
+def api_get_messages(chat_id):
+    if "user" not in session:
+        return jsonify({"error": "Not logged in"}), 401
+
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT user, content, timestamp FROM messages WHERE chat_id = ? ORDER BY timestamp",
+        (chat_id,)
+    )
+    rows = cursor.fetchall()
+    conn.close()
+
+    messages = [{"user": row[0], "content": row[1], "timestamp": row[2]} for row in rows]
+    return jsonify(messages)
+
+
 # Uruchomienie serwera
 if __name__ == "__main__":
     app.run(debug=True)

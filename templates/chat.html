@@ -120,6 +120,32 @@
             margin-top: 10px;
         }
 
+        /*========================
+           NOWE – Dzień 6
+           Okno czatu
+        ======================== */
+        
+        .chat-window {
+            flex: 1;
+            margin-left: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #messages {
+            flex: 1;
+            border: 1px solid #ccc;
+            padding: 10px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+
+        #messageInput {
+            flex: 1;
+            padding: 5px;
+        }
+        
+
     </style>
 </head>
 <body>
@@ -144,6 +170,19 @@
                 <button onclick="openModal()">+</button>
             </h2>
             <ul id="chatList"></ul>
+        </div>
+        <!-- ========================
+            NOWE – Dzień 6 (WYKOMENTOWANE)
+            Okno czatu + input + przycisk wyślij
+       ======================== -->
+        
+        <div class="chat-window" id="chatWindow">
+            <div id="messages">
+            </div>
+            <div style="display:flex; gap:5px;">
+                <input type="text" id="messageInput" placeholder="Napisz wiadomość...">
+                <button onclick="sendMessage()">➡️</button>
+            </div>
         </div>
 
         <!-- Tutaj będzie okienko modal do tworzenia czatu -->
@@ -188,7 +227,7 @@
         const modal = document.getElementById("chatModal");
         const chatList = document.getElementById("chatList");
         const userList = document.getElementById("userList");
-        const userSearch = document.getElementById("userSearch");
+        //const userSearch = document.getElementById("userSearch");
         const chatNameInput = document.getElementById("chatName");
 
         function openModal() {
@@ -199,7 +238,7 @@
         function closeModal() {
             modal.style.display = "none";
             chatNameInput.value = "";
-            userSearch.value = "";
+            //userSearch.value = "";
             userList.innerHTML = "";
         }
 
@@ -249,7 +288,8 @@
 
             if (res.ok) {
                 closeModal();
-                loadChats();
+                await loadChats();
+                
             } else {
                 const data = await res.json();
                 alert(data.error);
@@ -265,15 +305,70 @@
                 const btn = document.createElement("button");
                 btn.className = "chat-btn";
                 btn.textContent = chat.name;
+                // ========================
+                // NOWE – Dzień 6 (WYKOMENTOWANE)
+                // Obsługa kliknięcia czatu i ładowanie wiadomości
+                // ========================
+                
                 btn.onclick = () => {
-                    // TODO: wyświetlenie czatu po kliknięciu
-                    alert("Kliknięto czat: " + chat.name);
+                    currentChatId = chat.id;
+                    loadMessages();
                 };
+                
+
+              
                 chatList.appendChild(btn);
             });
         }
 
         loadChats();
+        // ========================
+        // NOWE – Dzień 6 (WYKOMENTOWANE)
+        // Funkcje wysyłania i pobierania wiadomości
+        // ========================
+        
+        let currentChatId = null;
+        const messagesDiv = document.getElementById("messages");
+        const messageInput = document.getElementById("messageInput");
+
+        async function loadMessages() {
+            if (!currentChatId) return;
+            const res = await fetch(`/api/messages/${currentChatId}`);
+            const msgs = await res.json();
+
+            messagesDiv.innerHTML = "";
+            msgs.forEach(m => {
+                const div = document.createElement("div");
+                div.textContent = `[${m.timestamp}] ${m.user}: ${m.content}`;
+                messagesDiv.appendChild(div);
+            });
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const content = messageInput.value.trim();
+            if (!content || !currentChatId) return;
+
+            const res = await fetch("/api/messages", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ chat_id: currentChatId, content })
+            });
+
+            if (res.ok) {
+                messageInput.value = "";
+                loadMessages();
+            } else {
+                const data = await res.json();
+                alert(data.error);
+            }
+        }
+
+        // Auto odświeżanie wiadomości co 3 sekundy
+        setInterval(() => {
+            if (currentChatId) loadMessages();
+        }, 3000);
+        
 
 
     </script>
