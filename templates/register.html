@@ -3,61 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <title>Rejestracja - Chat App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
 </head>
-<body>
-    <h1>Rejestracja użytkownika</h1>
-    <form id="registerForm">
-        <label>Username: <input type="text" name="username" required></label><br><br>
-        <label>Password: <input type="password" name="password" required></label><br><br>
-        <button type="submit">Zarejestruj</button>
-    </form>
+<body class="modern-page">
+    <div class="login-container">
+        <h1>Rejestracja użytkownika</h1>
+        <form id="registerForm">
+            <label>Login: <input type="text" name="username" required></label><br><br>
+            <label>Hasło: <input type="password" name="password" required></label><br><br>
+            <button type="submit">Zarejestruj</button>
+        </form>
 
-    <p id="result"></p>
+        <p id="result"></p>
 
-    <!-- ========================
-        Dzień 5
-        Guzik / link do logowania
-        ======================== -->
-    <div class="login-link">
-        <span>Masz już konto?</span>
-        <button id="loginBtn">Zaloguj się</button>
-    </div>
+        <!-- ========================
+            Dzień 5
+            Guzik / link do logowania
+            ======================== -->
+        <div class="login-link">
+            <span>Masz już konto?</span>
+            <button id="loginBtn">Zaloguj się</button>
+        </div>
 
-    <script>
-        const form = document.getElementById("registerForm");
-        const result = document.getElementById("result");
-        const loginBtn = document.getElementById("loginBtn");
+        <script>
+            const form = document.getElementById("registerForm");
+            const result = document.getElementById("result");
+            const loginBtn = document.getElementById("loginBtn");
 
-        form.addEventListener("submit", async (e) => {
-            e.preventDefault();
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
 
-            const data = {
-                username: form.username.value,
-                password: form.password.value
-            };
+                const data = {
+                    username: form.username.value,
+                    password: form.password.value
+                };
 
-            const response = await fetch("/register", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data)
+                const response = await fetch("/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data)
+                });
+
+                const resData = await response.json();
+                if (response.ok) {
+                    result.style.color = "green";
+                    result.textContent = resData.message;
+                } else {
+                    result.style.color = "red";
+                    result.textContent = resData.error;
+                }
             });
 
-            const resData = await response.json();
-            if (response.ok) {
-                result.style.color = "green";
-                result.textContent = resData.message;
-            } else {
-                result.style.color = "red";
-                result.textContent = resData.error;
-            }
-        });
+            // Przekierowanie do logowania
 
-        // Przekierowanie do logowania
+            loginBtn.addEventListener("click", () => {
+                window.location.href = "/login";
+            });
 
-        loginBtn.addEventListener("click", () => {
-            window.location.href = "/login";
-        });
-
-    </script>
+        </script>
+    </div>
 </body>
 </html>

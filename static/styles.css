@@ -1,0 +1,407 @@
+﻿
+:root {
+    --bg-color: #050505;
+    --container-bg: #0a0a0a;
+    --accent-color: #00ff41; 
+    --accent-glow: rgba(0, 255, 65, 0.3);
+    --text-color: #00ff41;
+    --dim-text: #008f11;
+    --font-main: 'Cascadia Code', 'Courier New', monospace;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: var(--font-main);
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-image: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    background-size: 100% 4px, 3px 100%;
+}
+
+/* --- TOPBAR (BIAŁY) --- */
+.topbar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    border-bottom: 2px solid #ffffff;
+    padding: 10px 20px;
+    background: #000;
+    color: #ffffff;
+}
+
+.profile {
+    position: relative;
+    cursor: pointer;
+}
+
+    .profile strong {
+        color: #ffffff;
+        text-transform: none;
+        text-shadow: none;
+    }
+
+.dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background: #000;
+    border: 1px solid #ffffff;
+    z-index: 1000;
+    padding: 5px;
+    margin-top: 5px;
+}
+
+    .dropdown button {
+        background: transparent;
+        color: #ffffff;
+        border: none;
+        width: 100%;
+        padding: 8px 15px;
+        cursor: pointer;
+    }
+
+/* --- LEWA KOLUMNA (LISTA + MODAL) --- */
+.chat-list {
+    width: 300px;
+    background: rgba(10, 10, 10, 0.9);
+    border: 1px solid #ffffff;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    color: #ffffff;
+    overflow-y: auto;
+}
+
+.modal {
+    display: none;
+    position: static;
+    width: 100%;
+    background: transparent;
+    margin-bottom: 20px;
+    border-bottom: 2px dashed #ffffff;
+    padding-bottom: 15px;
+}
+
+.modal-content {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    width: 100%;
+}
+
+    .modal-content input {
+        width: 100%;
+        background: #000;
+        border: 1px solid #ffffff;
+        color: #ffffff;
+        padding: 5px;
+        margin: 10px 0;
+    }
+
+.user-list {
+    max-height: 150px;
+    overflow-y: auto;
+    border: 1px solid #333;
+    margin-bottom: 10px;
+}
+
+.user-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px;
+    border-bottom: 1px solid #222;
+}
+
+    .user-item button {
+        background: #ffffff;
+        color: #000;
+        border: none;
+        padding: 0 5px;
+    }
+
+.modal-footer button {
+    background: #ffffff;
+    color: #000;
+    border: none;
+    padding: 5px;
+    width: 48%;
+}
+
+/* LISTA CZATÓW */
+#chatList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.chat-list h2 {
+    font-size: 1rem;
+    border-bottom: 1px solid #ffffff;
+    padding-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+}
+
+    .chat-list h2 button {
+        background: #ffffff;
+        color: #000;
+        border: none;
+    }
+
+.chat-btn {
+    background: transparent;
+    color: #cccccc;
+    text-align: left;
+    padding: 10px;
+    width: 100%;
+    border: 1px solid transparent;
+    cursor: pointer;
+}
+
+    .chat-btn:hover {
+        color: #ffffff;
+        border-left: 2px solid #ffffff;
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+/* --- OKNO CZATU (ZIELONE) --- */
+.chat-container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    padding: 10px;
+    gap: 15px;
+}
+
+.chat-window {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid var(--accent-color);
+    display: none;
+    flex-direction: column;
+    padding: 15px;
+}
+
+#messages {
+    flex: 1;
+    overflow-y: auto;
+    color: var(--accent-color);
+}
+
+   
+
+/* INPUT WIADOMOŚCI */
+input[id="messageInput"] {
+    background: #000;
+    border: 1px solid var(--accent-color);
+    color: var(--accent-color);
+    padding: 10px;
+    flex: 1;
+    font-family: var(--font-main);
+}
+
+
+button[onclick="sendMessage()"] {
+    background-color: #000000; /* Czarne tło */
+    color: var(--accent-color); /* Zielona strzałka */
+    border: 1px solid var(--accent-color); 
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: bold;
+    font-family: var(--font-main);
+    transition: 0.3s;
+}
+
+    button[onclick="sendMessage()"]:hover {
+        background-color: var(--accent-color); /* Odwrócenie kolorów przy najechaniu */
+        color: #000000;
+    }
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #ffffff;
+}
+
+/* --- NOWY PANEL WPISYWANIA (Terminal Style) --- */
+
+/* Kontener łączący prefiks i input */
+.input-wrapper {
+    display: flex;
+    align-items: center;
+    background: #000;
+    border: 1px solid var(--accent-color);
+    padding: 0 12px;
+    flex: 1; /* Zajmuje dostępną przestrzeń obok przycisku */
+    transition: box-shadow 0.3s ease;
+}
+
+/* Prefiks */
+.input-prefix {
+    color: var(--accent-color);
+    font-family: var(--font-main);
+    white-space: nowrap;
+    padding-right: 8px;
+    user-select: none; 
+    font-weight: bold;
+    /* Animacja pulsowania */
+    animation: terminalPulse 2s infinite ease-in-out;
+}
+
+
+#messageInput {
+    background: transparent !important; 
+    border: none !important; 
+    color: var(--accent-color);
+    flex: 1;
+    outline: none;
+    font-family: var(--font-main);
+    padding: 12px 0;
+}
+
+/* Poświata całego paska, gdy pole jest aktywne */
+.input-wrapper:focus-within {
+    box-shadow: 0 0 15px var(--accent-glow);
+}
+
+/* --- ANIMACJA PULSOWANIA --- */
+@keyframes terminalPulse {
+    0% {
+        text-shadow: 0 0 2px var(--accent-color);
+        opacity: 0.8;
+    }
+
+    50% {
+        text-shadow: 0 0 10px var(--accent-color), 0 0 15px var(--dim-text);
+        opacity: 1;
+    }
+
+    100% {
+        text-shadow: 0 0 2px var(--accent-color);
+        opacity: 0.8;
+    }
+}
+
+
+#messages div::before {
+    
+    color: var(--accent-color);
+    font-weight: bold;
+}
+
+/*login*/
+
+
+.modern-page {
+    --bg-dark: #050505; /* Głęboka czerń jak w chacie */
+    --card-bg: #0a0a0a; /* Nieco jaśniejsza czerń dla karty */
+    --text-white: #ffffff;
+    --border-white: #ffffff;
+    --dim-gray: #888888;
+    font-family: 'Segoe UI', Helvetica, Arial, sans-serif !important;
+    background-color: var(--bg-dark) !important;
+    background-image: none !important; 
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: var(--text-white);
+}
+
+    /* Karta logowania */
+    .modern-page .login-container {
+        background: var(--card-bg);
+        padding: 40px;
+        border-radius: 12px;
+        border: 1px solid var(--border-white); 
+        width: 100%;
+        max-width: 400px;
+        text-align: left;
+        box-shadow: 0 10px 30px rgba(255, 255, 255, 0.05);
+    }
+
+    .modern-page h1 {
+        color: var(--text-white);
+        font-size: 26px;
+        margin-bottom: 30px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    /* Inputy (Czarne tło, białe obramowanie) */
+    .modern-page input {
+        width: 100%;
+        padding: 14px;
+        margin: 12px 0;
+        background-color: #000000;
+        border: 1px solid var(--border-white);
+        border-radius: 4px; 
+        color: var(--text-white);
+        font-size: 16px;
+        box-sizing: border-box;
+        outline: none;
+        transition: 0.3s;
+    }
+
+        .modern-page input:focus {
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+
+    /* Przycisk (Biały z czarnym napisem) */
+    .modern-page button[type="submit"] {
+        width: 100%;
+        background-color: var(--text-white);
+        color: #000000;
+        border: 1px solid var(--border-white);
+        padding: 14px;
+        border-radius: 4px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 20px;
+        text-transform: uppercase;
+        transition: 0.3s;
+    }
+
+        .modern-page button[type="submit"]:hover {
+            background-color: #000000;
+            color: var(--text-white);
+        }
+
+ 
+    
+
+    /* Komunikaty błędów */
+    .modern-page #result {
+        margin-top: 15px;
+        font-size: 14px;
+    }
+/* Startowy stan: całkowicie ukryty i wyłączony z widoku */
+#chatModal {
+    display: none !important;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.9);
+    justify-content: center;
+    align-items: center;
+}
+
+    /* Klasa aktywująca - musi być dokładnie tak napisana */
+    #chatModal.active {
+        display: flex !important;
+    }

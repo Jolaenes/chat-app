@@ -1,78 +1,82 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <meta charset="UTF-8">
     <title>Logowanie - Chat App</title>
 </head>
-<body>
-    <h1>Logowanie</h1>
+<body class="modern-page">
+    <div class="login-container">
+        <h1>Logowanie</h1>
 
-    <form id="loginForm">
-        <label>
-            Username:
-            <input type="text" name="username" required>
-        </label><br><br>
+        <form id="loginForm">
+            <label>
+                Login:
+                <input type="text" name="username" required>
+            </label><br><br>
 
-        <label>
-            Password:
-            <input type="password" name="password" required>
-        </label><br><br>
+            <label>
+                Hasło:
+                <input type="password" name="password" required>
+            </label><br><br>
 
-        <button type="submit">Zaloguj</button>
-    </form>
+            <button type="submit">Zaloguj</button>
+        </form>
 
-    <p id="result"></p>
+        <p id="result"></p>
 
-    <!-- ========================
-     Dzień 5
-     Guzik / link do rejestracji
-     ======================== -->
-    <div class="register-link">
-        <span>Nie masz konta?</span>
-        <button id="registerBtn">Zarejestruj się</button>
-    </div>
+        <!-- ========================
+         Dzień 5
+         Guzik / link do rejestracji
+         ======================== -->
+        <div class="register-link">
+            <span>Nie masz konta?</span>
+            <button id="registerBtn">Zarejestruj się</button>
+        </div>
 
-    <script>
-        const form = document.getElementById("loginForm");
-        const result = document.getElementById("result");
-        const registerBtn = document.getElementById("registerBtn");
+        <script>
+            const form = document.getElementById("loginForm");
+            const result = document.getElementById("result");
+            const registerBtn = document.getElementById("registerBtn");
 
-        form.addEventListener("submit", async (e) => {
-            e.preventDefault();
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
 
-            const response = await fetch("/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    username: form.username.value,
-                    password: form.password.value
-                })
-            });
+                const response = await fetch("/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        username: form.username.value,
+                        password: form.password.value
+                    })
+                });
 
-            const data = await response.json();
+                const data = await response.json();
 
-            if (response.ok) {
-                result.style.color = "green";
                 if (response.ok) {
-                    window.location.href = data.redirect;
+                    result.style.color = "green";
+                    if (response.ok) {
+                        window.location.href = data.redirect;
+                    } else {
+                        result.style.color = "red";
+                        result.textContent = data.error;
+                    }
+
                 } else {
                     result.style.color = "red";
                     result.textContent = data.error;
                 }
+            });
 
-            } else {
-                result.style.color = "red";
-                result.textContent = data.error;
-            }
-        });
 
-     
-        // Przekierowanie do rejestracji
-      
-        registerBtn.addEventListener("click", () => {
-            window.location.href = "/register";
-        });
+            // Przekierowanie do rejestracji
 
-    </script>
+            registerBtn.addEventListener("click", () => {
+                window.location.href = "/register";
+            });
+
+        </script>
+    </div>
+
 </body>
 </html>

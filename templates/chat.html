@@ -2,160 +2,10 @@
 <html lang="pl">
 <head>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <meta charset="UTF-8">
     <title>Chat</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-        }
-
-        .topbar {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            padding: 10px 20px;
-            background-color: #f0f0f0;
-        }
-
-        .profile {
-            cursor: pointer;
-            position: relative;
-        }
-
-        .dropdown {
-            display: none;
-            position: absolute;
-            right: 0;
-            top: 30px;
-            background: white;
-            border: 1px solid #ccc;
-            padding: 5px;
-        }
-
-            .dropdown button {
-                background: none;
-                border: none;
-                cursor: pointer;
-                padding: 5px;
-                width: 100%;
-                text-align: left;
-            }
-
-        /* ========================
-           Dzień 5
-           Lista czatów i modal
-        ======================== */
-        .chat-container {
-            display: flex;
-            padding: 20px;
-            height: calc(100vh - 50px);
-        }
-
-        .chat-list {
-            width: 200px;
-        }
-
-            .chat-list h2 {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-
-            .chat-list ul {
-                list-style: none;
-                padding: 0;
-            }
-
-            .chat-list li {
-                margin-bottom: 5px;
-            }
-
-            .chat-list button.chat-btn {
-                width: 100%;
-                padding: 5px;
-                cursor: pointer;
-            }
-
-        /* Modal okienko */
-        .modal {
-            display: none; /* ukryty domyślnie */
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 20px;
-            width: 400px;
-            max-height: 80%;
-            overflow-y: auto;
-            border-radius: 5px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .user-list {
-            max-height: 200px;
-            overflow-y: auto;
-            border: 1px solid #ccc;
-            margin: 10px 0;
-        }
-
-        .user-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 5px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .modal-footer {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        /*========================
-           Dzień 6
-           Okno czatu
-        ======================== */
-
-        .chat-window {
-            flex: 1;
-            margin-left: 20px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        #messages {
-            flex: 1;
-            border: 1px solid #ccc;
-            padding: 10px;
-            overflow-y: auto;
-            margin-bottom: 10px;
-        }
-
-        #messageInput {
-            flex: 1;
-            padding: 5px;
-        }
-
-        .chat-window {
-            flex: 1;
-            margin-left: 20px;
-            display: none; /* <-- ukryte domyślnie */
-            flex-direction: column;
-            height: 100%;
-        }
-
-    </style>
+   
 </head>
 <body>
 
@@ -188,12 +38,15 @@
         <div class="chat-window" id="chatWindow">
             <div id="messages">
             </div>
-            <div style="display:flex; gap:5px;">
-                <input type="text" id="messageInput" placeholder="Napisz wiadomość...">
-                <button onclick="sendMessage()">➡️</button>
+            <div style="display: flex; gap: 5px; align-items: stretch;">
+                <div class="input-wrapper">
+                    <span class="input-prefix">\{{ user }}></span>
+                    <input type="text" id="messageInput" placeholder="" autocomplete="off">
+                </div>
+                <button onclick="sendMessage()">-></button>
+
             </div>
         </div>
-
         <!-- Tutaj będzie okienko modal do tworzenia czatu -->
         <div class="modal" id="chatModal">
             <div class="modal-content">
@@ -240,15 +93,16 @@
         const chatNameInput = document.getElementById("chatName");
 
         function openModal() {
-            modal.style.display = "flex";
+            modal.classList.add("active");
             loadUsers();
         }
 
         function closeModal() {
-            modal.style.display = "none";
+            modal.classList.remove("active");
             chatNameInput.value = "";
             //userSearch.value = "";
             userList.innerHTML = "";
+            selectedUsers.clear();
         }
 
         // Pobranie listy wszystkich użytkowników 
@@ -346,7 +200,7 @@
             messagesDiv.innerHTML = "";
             msgs.forEach(m => {
                 const div = document.createElement("div");
-                div.textContent = `[${m.timestamp}] ${m.user}: ${m.content}`;
+                div.textContent = `[${m.timestamp}]\\${m.user}> ${m.content}`;
                 messagesDiv.appendChild(div);
             });
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
@@ -390,7 +244,7 @@
         socket.on("receive_message", (data) => {
             if (currentChatId === data.chat_id) { // tylko w aktualnym czacie
                 const div = document.createElement("div");
-                div.textContent = `[${data.timestamp}] ${data.user}: ${data.content}`;
+                div.textContent = `[${data.timestamp}]\\${data.user}> ${data.content}`;
                 messagesDiv.appendChild(div);
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
             }
