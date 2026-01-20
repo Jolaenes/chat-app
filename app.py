@@ -7,8 +7,19 @@ from models import init_db  # importujemy init_db()
 import pytz
 from datetime import datetime
 from flask_socketio import SocketIO, emit, join_room
+import logging
 
-
+# ==========================
+# Dzień 9 – Logging i obsługa błędów
+# ==========================
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.FileHandler("app.log", encoding="utf-8"),
+        logging.StreamHandler()
+    ]
+)
 app = Flask(__name__)
 #DZIEN7
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -38,8 +49,10 @@ def register_user():
 
     # Walidacja
     if not username or not password:
+        logging.warning(f"Nieudana próba rejestracji – brak danych")
         return jsonify({"error": "Username and password are required"}), 400
     if len(username) < 3 or len(password) < 6:
+        logging.warning(f"Nieudana próba rejestracji – za krótkie dane")
         return jsonify({"error": "Username min 3 chars, password min 6 chars"}), 400
 
     hashed_password = generate_password_hash(password)
@@ -53,8 +66,10 @@ def register_user():
         )
         conn.commit()
         conn.close()
+        logging.info(f"Rejestracja użytkownika: {username}")
         return jsonify({"message": "User registered successfully"}), 201
-    except sqlite3.IntegrityError:
+    except sqlite3.IntegrityError as e:
+        logging.error(f"Błąd przy rejestracji użytkownika {username}: {str(e)}")
         return jsonify({"error": "Username already exists"}), 400
 
 
@@ -83,11 +98,12 @@ def login_user():
     conn.close()
 
     if not user or not check_password_hash(user[0], password):
+        logging.warning(f"Nieudane logowanie użytkownika: {username}") 
         return jsonify({"error": "Invalid username or password"}), 401
 
     # Zapis sesji
     session["user"] = username
-
+    logging.info(f"Zalogowano użytkownika: {username}")
     return jsonify({"redirect": "/chat"}), 200
 
 
@@ -97,7 +113,9 @@ def login_user():
 
 @app.route("/logout")
 def logout():
+    user = session.get("user", None)
     session.pop("user", None)
+    logging.info(f"Wylogowano użytkownika: {user}") 
     return jsonify({"message": "Logged out"}), 200
 
 
@@ -167,6 +185,7 @@ def api_create_chat():
     user_ids = data.get("user_ids", [])
 
     if not name or not user_ids:
+        logging.warning(f" Nieudana próba tworzenia czatu – brak danych")
         return jsonify({"error": "Name and users are required"}), 400
 
     conn = sqlite3.connect("database.db")
@@ -188,8 +207,10 @@ def api_create_chat():
 
         conn.commit()
         conn.close()
+        logging.info(f"Utworzono czat '{name}' przez użytkownika {session['user']}")
         return jsonify({"message": "Chat created"}), 201
     except sqlite3.IntegrityError as e:
+        logging.error(f"Błąd przy tworzeniu czatu '{name}': {str(e)}")
         conn.close()
         return jsonify({"error": str(e)}), 400
 
@@ -219,7 +240,7 @@ def api_send_message():
     )
     conn.commit()
     conn.close()
-
+    logging.info(f"Wiadomość wysłana w czacie {chat_id} przez {session['user']}")
     return jsonify({"message": "Message sent"}), 201
 
 # ================================
@@ -271,7 +292,7 @@ def socket_send_message(data):
     )
     conn.commit()
     conn.close()
-
+    logging.info(f"Wiadomość wysłana przez {user} w czacie {data['chat_id']} (Socket)") 
 
     emit("receive_message", {
         "chat_id": data["chat_id"],
@@ -284,4 +305,5 @@ def socket_send_message(data):
 
 # Uruchomienie serwera
 if __name__ == "__main__":
+    logging.info("Uruchomienie serwera Flask + SocketIO")
     socketio.run(app, debug=True, port=5000)
