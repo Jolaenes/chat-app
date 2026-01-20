@@ -14,6 +14,7 @@ Prosty projekt aplikacji czatu napisany w Python (Flask) z użyciem SQLite.
 - Wysyłanie wiadomości
 - Historia wiadomości
 - Wiadomości w czasie rzeczywistym (Socket.IO)
+- UI
 
 ---
 
@@ -42,7 +43,8 @@ chat-app/
 │   ├── login.html
 │   ├── register.html
 │   └── chat.html
-│
+├── static/
+│   └── styles.css
 ├── .gitignore
 ├── README.md
 └── venv/
@@ -69,6 +71,7 @@ chat-app/
 | feature/login | Dzień 4 – logowanie |
 | feature/chat | Dzień 5 – czaty |
 | feature/messages | Dzień 6 i 7 – wiadomości |
+| feature/UI | Dzień 8 – interfejs użytkownika |
 
 ---
 
